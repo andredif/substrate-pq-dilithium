@@ -17,7 +17,7 @@
 
 //! Cryptographic utilities.
 
-use crate::{ed25519, sr25519};
+use crate::{ed25519, sr25519, dilithium3};
 #[cfg(feature = "std")]
 use bip39::{Language, Mnemonic, MnemonicType};
 use codec::{Decode, Encode, MaxEncodedLen};

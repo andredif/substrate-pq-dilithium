@@ -2181,6 +2181,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "dilithium-custom-lib"
+version = "0.1.0"
+source = "git+https://github.com/andredif/dilithium-custom-lib#1e0ed9b1da49fced436bebcad4e0934bf690ec6a"
+dependencies = [
+ "rand 0.8.5",
+ "rand_core 0.6.4",
+]
+
+[[package]]
 name = "directories"
 version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -11417,6 +11426,7 @@ dependencies = [
  "bounded-collections",
  "bs58",
  "criterion",
+ "dilithium-custom-lib",
  "dyn-clonable",
  "ed25519-zebra",
  "futures",

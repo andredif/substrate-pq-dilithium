@@ -341,6 +341,7 @@ crossbeam-deque = { opt-level = 3 }
 crypto-mac = { opt-level = 3 }
 curve25519-dalek = { opt-level = 3 }
 ed25519-zebra = { opt-level = 3 }
+dilithium-custom-lib = { git= "https://github.com/andredif/dilithium-custom-lib"}
 flate2 = { opt-level = 3 }
 futures-channel = { opt-level = 3 }
 hashbrown = { opt-level = 3 }

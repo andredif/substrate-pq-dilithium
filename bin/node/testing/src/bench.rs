@@ -47,7 +47,7 @@ use sc_executor::{NativeElseWasmExecutor, WasmExecutionMethod, WasmtimeInstantia
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
 use sp_consensus::BlockOrigin;
-use sp_core::{blake2_256, ed25519, sr25519, traits::SpawnNamed, Pair, Public};
+use sp_core::{blake2_256, ed25519, sr25519, dilithium3, traits::SpawnNamed, Pair, Public};
 use sp_inherents::InherentData;
 use sp_runtime::{
 	traits::{Block as BlockT, IdentifyAccount, Verify},
@@ -70,6 +70,7 @@ pub struct BenchKeyring {
 enum BenchPair {
 	Sr25519(sr25519::Pair),
 	Ed25519(ed25519::Pair),
+	Dilithium3(dilithium3::Pair),
 }
 
 impl BenchPair {
@@ -77,6 +78,7 @@ impl BenchPair {
 		match self {
 			Self::Sr25519(pair) => pair.sign(payload).into(),
 			Self::Ed25519(pair) => pair.sign(payload).into(),
+			Self::Dilithium3(pair) => pair.sign(payload).into(),
 		}
 	}
 }
@@ -510,6 +512,8 @@ pub enum KeyTypes {
 	Sr25519,
 	/// ed25519 signing keys
 	Ed25519,
+	/// ed25519 signing keys
+	Dilithium3,
 }
 
 impl BenchKeyring {
@@ -529,6 +533,11 @@ impl BenchKeyring {
 					(account_id, BenchPair::Sr25519(pair))
 				},
 				KeyTypes::Ed25519 => {
+					let pair = ed25519::Pair::from_seed(&blake2_256(seed.as_bytes()));
+					let account_id = AccountPublic::from(pair.public()).into_account();
+					(account_id, BenchPair::Ed25519(pair))
+				},
+				KeyTypes::Dilithium3 => {
 					let pair = ed25519::Pair::from_seed(&blake2_256(seed.as_bytes()));
 					let account_id = AccountPublic::from(pair.public()).into_account();
 					(account_id, BenchPair::Ed25519(pair))
