@@ -65,6 +65,7 @@ pub mod hash;
 mod hasher;
 pub mod offchain;
 pub mod sr25519;
+pub mod dilithium3;
 pub mod testing;
 #[cfg(feature = "std")]
 pub mod traits;
