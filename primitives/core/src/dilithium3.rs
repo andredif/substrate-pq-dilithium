@@ -28,6 +28,7 @@ use crate::{
 };
 use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
+use crate::hexdisplay::AsBytesRef;
 
 #[cfg(feature = "serde")]
 use crate::crypto::Ss58Codec;
@@ -78,6 +79,13 @@ pub struct Public(pub [u8; 1952]);
 #[cfg(feature = "full_crypto")]
 #[derive(Copy, Clone)]
 pub struct Pair (Keypair);
+
+impl AsBytesRef for Public {
+    fn as_bytes_ref(&self) -> &[u8] {
+        &self.0  // Access the inner byte array and return it as a slice
+    }
+}
+
 
 impl FromEntropy for Public {
 	fn from_entropy(input: &mut impl codec::Input) -> Result<Self, codec::Error> {
@@ -173,7 +181,7 @@ impl sp_std::fmt::Debug for Public {
 	#[cfg(feature = "std")]
 	fn fmt(&self, f: &mut sp_std::fmt::Formatter) -> sp_std::fmt::Result {
 		let s = self.to_ss58check();
-		write!(f, "{} ({}...)", crate::hexdisplay::HexDisplay::from(&self), &s[0..1952])
+		write!(f, "{} ({}...)", crate::hexdisplay::HexDisplay::from(self), &s[0..1952])
 	}
 
 	#[cfg(not(feature = "std"))]
@@ -346,7 +354,7 @@ impl Derive for Public {}
 
 /// Derive a single hard junction.  #TODO_DLT3
 #[cfg(feature = "full_crypto")]
-fn derive_hard_junction(secret_seed: &Seed, cc: &[u8; 1952]) -> Seed {
+fn derive_hard_junction(secret_seed: &Seed, cc: &[u8; 32]) -> Seed {
 	("Ed25519HDKD", secret_seed, cc).using_encoded(sp_core_hashing::blake2_256)
 }
 
@@ -361,9 +369,11 @@ impl TraitPair for Pair {
 
 	fn from_seed_slice(seed_slice: &[u8]) -> Result<Pair, SecretStringError> {
         if seed_slice.len() != 32 {
-            return Err(SecretStringError)
+            return Err(SecretStringError::InvalidSeedLength)
         }
-		let keys = Keypair::generate(seed_slice);
+		let mut correct_seed_slice: [u8; 32] = [0u8; 32];
+		correct_seed_slice.copy_from_slice(seed_slice);
+		let keys = Keypair::generate(&correct_seed_slice);
 		Ok(Pair (keys ))
 	}
 
@@ -371,9 +381,9 @@ impl TraitPair for Pair {
 	fn derive<Iter: Iterator<Item = DeriveJunction>>(
 		&self,
 		path: Iter,
-		_seed: Option<Seed>,
+		seed: Option<Seed>,
 	) -> Result<(Pair, Option<Seed>), DeriveError> {
-		let mut acc = self.0.expose_secret();
+		let mut acc = seed.ok_or("No seed provided").clone().unwrap();
 		for j in path {
 			match j {
 				DeriveJunction::Soft(_cc) => return Err(DeriveError::SoftKeyInPath),
